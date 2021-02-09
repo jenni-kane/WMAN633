@@ -1,0 +1,74 @@
+---
+title: "Homework 1"
+author: "Jenni Kane"
+date: "2/10/2021"
+output: html_document
+---
+
+
+Question 1 
+Added a dummy variable for beach ID. Beach A=0, Beach B=1, Beach C=2.
+
+```{r}
+setwd("~/Desktop")
+beach<-read.csv(file='beach.csv')
+head(beach)
+```
+Question 2
+```{r}
+beach.model<-lm(formula=OpenBeach~Year*Dummy.ID, data = beach)
+summary(beach.model)
+```
+```{r}
+coefficients(beach.model)
+```
+
+
+```{r}
+betas<-coefficients(beach.model)
+```
+
+
+Question 3
+Beach A (dummy variable 0) in 1992
+```{r}
+betas[1]+(betas[2]+betas[4]*0)*1992+betas[3]*0
+```
+
+Beach B (dummy variable 1) in 1992
+```{r}
+betas[1]+(betas[2]+betas[4]*1)*1992+betas[3]*1
+```
+
+Beach C (dummy variable 2) in 1992
+
+```{r}
+betas[1]+(betas[2]+betas[4]*2)*1992+betas[3]*2
+```
+
+
+Question 4
+```{r}
+plot(beach$Year, beach$OpenBeach, xlab = 'Year', ylab = 'Open Beach Area')
+
+```
+
+Question 5
+
+Rate of change at Beach A (dummy variable 0)
+
+```{r}
+betas[2]+(betas[4]*0)
+```
+
+Rate of change at Beach B (dummy variable 1)
+```{r}
+betas[2]+(betas[4]*1)
+```
+
+Rate of change at Beach C (dummy variable 2)
+```{r}
+betas[2]+(betas[4]*2)
+```
+Interpretation: 
+Beach area is decreasing with time most rapidly at beach A, at a rate of 15.0912 area units per year. Beach C area is decreasing but at a much less rapid pace, at 0.7 area units per year. 
