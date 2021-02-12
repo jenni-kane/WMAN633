@@ -1,0 +1,177 @@
+---
+title: "Homework 2"
+author: "Jenni Kane"
+date: "2/12/2021"
+output: html_document
+---
+QUESTION 1
+```{r}
+beach<-read.csv(file = 'beach.csv')
+
+beach.model<-lm(formula=OpenBeach~Year*Dummy.ID, data = beach)
+summary(beach.model)
+```
+```{r}
+beach.residuals<-residuals(beach.model)
+summary(beach.residuals)
+```
+Does match the quantiles from above. 
+```{r}
+hist.rediduals<-hist(beach.residuals)
+```
+
+
+
+
+Residuals appear reasonably Gaussian. 
+
+QUESTION 2-calculate test statistics
+
+```{r}
+betas<-coefficients(beach.model)
+betas
+```
+
+Test statistic for year 
+```{r}
+#Standard error 
+SE_year<-summary(beach.model)[['coefficients']]['Year', 'Std. Error']
+
+#Null hypothesis: that there is no change over time in beach area 
+null_1<-0
+
+#Test Statistic 
+TS_year<-(betas[2]-null_1)/SE_year
+TS_year
+```
+Matches model output!
+
+
+Test statistic for Beach ID 
+
+```{r}
+SE_beachID<-summary(beach.model)[['coefficients']]['Dummy.ID', 'Std. Error']
+
+#Null hypothesis: that there is no difference between beaches in beach area 
+null_1<-0
+
+#Test Statistic 
+TS_beachID<-(betas[3]-null_1)/SE_beachID
+TS_beachID
+```
+Matches model output!
+
+
+
+Test Statistic for Years*Beach ID 
+
+```{r}
+SE_yearbyID<-summary(beach.model)[['coefficients']]['Year:Dummy.ID', 'Std. Error']
+
+#Null hypothesis: that there is no difference in beach area over time between beaches 
+null_1<-0
+
+#Test Statistic 
+TS_yearbyID<-(betas[4]-null_1)/SE_yearbyID
+TS_yearbyID
+```
+Matches model output!
+
+Test statistic for Intercept 
+
+```{r}
+SE_intercept<-summary(beach.model)[['coefficients']]['(Intercept)', 'Std. Error']
+
+#Null hypothesis: that the line associated with the trend crosses the y axis at 0
+null_1<-0
+
+#Test Statistic 
+TS_intercept<-(betas[1]-null_1)/SE_intercept
+TS_intercept
+```
+Matches model output!
+
+
+QUESTION 3-calculate p-values 
+
+```{r}
+nrow(beach)
+```
+n-k degrees of freedom would be 62-4=58
+We have 58 degrees of freedom
+
+
+P value for year 
+```{r}
+pYear<-pt(q=TS_year, df=58)
+pYear
+pYear*2
+```
+Matches Model output! The null hypothesis is that there is no change over time in beach area. We reject this null hypothesis. 
+
+P value for Beach ID 
+```{r}
+pBeach<-pt(q=TS_beachID, df=58)
+pBeach
+pBeach*2
+```
+Matches model output! The null hypothesis is that there is no difference in the change in beach area over time between beaches. We reject this null hypothesis. 
+
+P value for interaction of year*beach ID 
+```{r}
+pBeachbyYear<-pt(q=-TS_yearbyID, df=58)
+pBeachbyYear
+pBeachbyYear*2
+```
+Matches model output! Null hypothesis was that there is no difference in beach area over time between beaches. We reject this null hypothesis. 
+
+
+P value for Intercept
+```{r}
+pIntercept<-pt(q=-TS_intercept, df=58)
+pIntercept
+pIntercept*2
+```
+Matches model output! Null hypothesis was that the point at which out line crosses the x axis is 0. We reject this null hypothesis. 
+
+
+QUESTION 4
+
+New null hypothesis to  test: That the change in beach area over time occurs at a rate of 100 hectares per year. Alternative hypothesis is that the change occurs at a rate greater than that. 
+
+```{r}
+null_new<-100
+#Test Statistic 
+TS_year_new<-(betas[2]-null_new)/SE_year
+TS_year_new
+```
+
+```{r}
+pYearNew<-pt(q=TS_year_new, df=58)
+pYearNew
+pYearNew*2
+```
+We can reject our null hypothesis, and accecpt the alternative; beach area is changing at a rate greater than 100 hectares per year. 
+
+QUESTION 5
+
+From the whole model output, we see that the main effects of Beach ID and Year are both affecting beach area significantly as well as the interaction between the two. Hence if we calculate the rate of change at the individual beaches, we see that the rates of change are indeed distinct at each of the beaches:
+
+
+Rate of change at Beach A (dummy variable 0)
+
+```{r}
+betas[2]+(betas[4]*0)
+```
+
+Rate of change at Beach B (dummy variable 1)
+```{r}
+betas[2]+(betas[4]*1)
+```
+
+Rate of change at Beach C (dummy variable 2)
+```{r}
+betas[2]+(betas[4]*2)
+```
+
+At beach A, area is decreasing at a rate of ~15 hectares per year. At beach B, area is decreasing by ~8 hectares per year. At beach C, area is decreasing by ~1 hectare per year. 
