@@ -1,0 +1,82 @@
+---
+title: "Exam 1"
+author: "Jenni Kane"
+date: "2/17/2021"
+output: html_document
+---
+1. Import this dataset into R and inspect the first several rows of your data
+```{r}
+data<-read.csv('Exam 1 Data.csv')
+head(data)
+```
+2. Fit a linear model that assumes your response is a function of x1, x2, and x3. Include an interaction between x1 and x2 only (i.e., do not include an interaction between your categorical variables and any other variables).
+```{r}
+fit<-lm(y~x1*x2+x3, data = data)
+summary(fit)
+```
+```{r}
+#store coefficients 
+b<-coefficients(fit)
+b
+#calculate dummy variables for categorical variables b and c
+data$b<-ifelse(data$x3 == 'b', 1, 0)
+data$c<-ifelse(data$x3 == 'c', 1, 0)
+head(data)
+```
+3. Interpret the effect of variable x1 when x2 = -1
+Our model:
+y=b[1]+b[2]x1+b[3]x2+b[4]b+b[5]c+b[6]x1x2
+
+Combine like terms for x1: x1(b[2]+b[6]x2)
+```{r}
+b[2]+b[6]*-1
+```
+The change in 1 y associated with a 1-unit change in x1 when x2 = -1 is 0.1108589
+
+4.  Interpret the effect of variable x1 when x2 = 1
+```{r}
+b[2]+b[6]*1
+```
+The change in 1 y associated with a 1-unit change in x1 when x2 = 1 is 0.4100783
+
+5. Interpret the effect of variable x3
+The difference in y between variables b and a is -1.627162195, when other variables are held constant. The difference in y between variables c and a is 0.002504032, when other variables are held constant. 
+
+6. Describe how R codes the categorical variable x3. Demonstrate by reporting the first 5 values of variables derived from x3
+
+R creates a new variable for 1 minus the number of categorical variables we have, in this case we add 2 columns; one column for b and one for c with a serving as the reference. Variable b would equal 1 when dealing with level b and 0 otherwise. Variable c would equal 1 when dealing with level c and 0 otherwise. Hence when dealing with factor a, both variables b and c would equal 0. 
+```{r}
+cbind(data$x3[1:5], ifelse(data$x3 == 'b', 1, 0) [1:5],
+    ifelse(data$x3 == 'c', 1, 0) [1:5])
+```
+
+7. Derive the test statistic and p-value associated with the interaction between x1 and x2. What is the null hypothesis assumed by the "lm()" function? Do we reject or fail to reject this null hypothesis? Defend your answer.
+```{r}
+null<-0
+SE_x1byx2<-summary(fit)[['coefficients']]['x1:x2', 'Std. Error']
+SE_x1byx2
+ts<-(b[6]-null)/SE_x1byx2
+ts
+```
+```{r}
+df<-nrow(data)-length(coef(fit))
+df
+(1-pt(ts, df=df))*2
+```
+Based on an alpha value of 0.05, we would fail to reject this null hypothesis (which was, that there is no change in y due to variable x1 given the value of x2). Our p value of 0.099 gives evidence that there is about a 10% chance of observing a value more extreme than the test statistic assuming our null hypothesis. This is reasonable evidence that the trend could be due to random variability, and hence we can't make strong conclusions that our alternative hypothesis is true.
+
+8. assume you have the following realizations of random variable Y :
+y = (3, 8, 7). Further assume realizations of the random variable Y are Gaussian distributed:
+y ∼ Gaussian(µ, σ2).Fix σ 2 = 1 and µ = 8, and evaluate the probability density at each of your 3 realizations.
+
+```{r}
+y<-c(3, 8, 7)
+dnorm(y, 8, 2)
+```
+ 9. What is a type I error? What is a p-value? How are the two quantities related?
+ 
+A type one error is defined as falsely rejecting a null hypothesis that is true. A p-value is the probability of observing a value more extreme than the test statistic under the assumptions of the null hypothesis. Since there is always a chance of observing a more extreme value than the test statistic by random chance alone even if our null hypothesis is true (that is, p values may be very small but will still be >0), we accept some chance of a type 1 error occurring due to random processes as acceptable and we still make statistical inference. The chance of this that we deem as acceptable is our alpha value and usually people use 0.05. So we are ok with a 5% chance of commiting a type 1 error, and if our p value is below that, we say it is significant. 
+
+10. What is a fundamental assumption we must make to derive inference about regression coefficients of a linear model?
+
+In order to make statistic inference about a regression coefficient we must assume that our linear model itself is Gaussian: that is, our response variable (y) is a Gaussian random variable and since our intercept and slope are combinations of y, we can assume that our slope coefficients are Gaussian and that our errors are Gaussian as well allowing us to make inferences. 
