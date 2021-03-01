@@ -1,0 +1,81 @@
+---
+title: "Homework 3"
+author: "Jenni Kane"
+date: "March 1, 2021"
+output:
+  html_document: default
+  word_document: default
+---
+```{r}
+setwd("C:/Users/jlp0043/Desktop")
+data<-read.csv("Homework 3 Data.csv")
+head(data)
+```
+
+Question 1
+```{r}
+fit<-glm(formula = y~x1+x2, family = binomial, data = data)
+summary(fit)
+```
+
+
+```{r}
+betas<-coef(fit)
+betas
+```
+
+Question 2
+
+```{r}
+plogis(betas[2])
+```
+This is the log odds of a success as a function of the predictor variable, x2. So 0.46 is the change in log odds of success (getting y=1) associated with a one unit change in x2.
+
+Question 3
+```{r}
+plogis(betas[3])
+```
+This is the log odds of a data point belonging to category b of our categorical variable.
+
+Question 4 
+
+Wald test for the effect of x1
+
+```{r}
+ts<-betas[2]/summary(fit)[['coefficients']]['x1', 'Std. Error']
+ts
+```
+
+
+```{r}
+p<-2*pnorm(-1*abs(ts), mean=0, sd=1)
+p
+```
+
+Wald test for effect of x2
+```{r}
+ts<-betas[3]/summary(fit)[['coefficients']]['x2b', 'Std. Error']
+ts
+```
+
+```{r}
+p<-2*pnorm(-1*abs(ts), mean=0, sd=1)
+p
+```
+
+Interpretation:
+
+For x1, we fail to reject the null hypothesis since our p value suggests ~60% chance of observing a value more extreme than the test statisic by chance alone. However for variable x2 we can reject the null hypothesis since the probablility of observing a more extreme test statistic by chance is very low, around 2%, suggesting that we can be reasonably sure that this effect arises as a function of variable x2.
+
+Question 5 
+
+```{r}
+x1<-seq(from=min(data$x1), to=max(data$x1), length.out = 100)
+head(x1)
+```
+```{r}
+y<-betas[1]+betas[2]*x1+betas[3]
+y
+plot(x=x1, y=plogis(y), ylab = "Probability of Success", xlab = "Value of x1")
+```
+
