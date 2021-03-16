@@ -1,0 +1,128 @@
+---
+title: "Homework 4"
+author: "Jenni Kane"
+date: "March 16, 2021"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r}
+data<-read.csv('Homework 4 Data.csv')
+head(data)
+```
+```{r}
+fit<-glm(formula= y ~ x1*x2, family=poisson, data = data)
+summary(fit)
+```
+```{r}
+b<-coef(fit)
+b
+```
+
+Interpret the effect of variable x1 on the expected count when x2 is fixed at level "b". Verify your
+interpretation in R.
+```{r}
+x1<-b[2]+b[4]
+```
+```{r}
+x1
+```
+```{r}
+exp(x1)
+```
+
+When x2 is fixed at level b, we would see a change of 1.460856 in the expected count (y) when x1 changes by one unit.
+
+Verification:
+```{r}
+#evaluate value of log(y) when x1=1
+
+x1_1<-b[1]+(b[2]*1)+(b[3]*1)+(b[4]*1*1)
+x1_1
+```
+
+```{r}
+#evaluate value of log(y) when x1=2
+
+x1_2<-b[1]+(b[2]*2)+(b[3]*1)+(b[4]*1*2)
+x1_2
+```
+```{r}
+#recreate slope coefficient and compare to model output
+log(exp(x1_2)/exp(x1_1));x1
+```
+
+
+Interpret the effect of variable x2 on the expected count when x1 is fixed at 1. Verify in R. 
+```{r}
+x2<-b[3]+b[4]
+x2
+```
+```{r}
+exp(x2)
+```
+When x1 is fixed at 1, we would see a change of .5665282 in the expected count (y) when variable x2 changes by one unit.
+
+```{r}
+x2_0<-b[1]+b[2]+(b[3]*0)+(b[4]*1*0)
+x2_0
+```
+
+```{r}
+x2_1<-b[1]+b[2]+(b[3]*1)+(b[4]*1*1)
+x2_1
+```
+
+```{r}
+log(exp(x2_1)/exp(x2_0)); x2
+```
+
+Predict the expected count, ± 95% confidence intervals, over the observed range of values of x1, assuming
+x2 is fixed at level "b".
+```{r}
+new<- data.frame(
+x1 = seq(min(data$x1), max(data$x1), length.out = 100),
+x2 = factor(x = rep('b', times = 100),
+levels = c('a', 'b')))
+
+prd <- predict.glm(object = fit, newdata = new, type = 'link', se.fit = T)
+
+low <- exp(prd$fit - qnorm(0.975) * prd$se.fit)
+summary(low)
+high <- exp(prd$fit + qnorm(0.975) * prd$se.fit)
+summary(high)
+
+
+plot(y = exp(prd$fit), x = new$x1, xlab = 'x1',
+ylab = 'Expected count', cex.axis = 1.5, cex.lab = 1.5,
+ylim = c(min(low), max(high)), type = 'l')+
+lines(x = new$x1, y = low, lty = 2)+
+lines(x = new$x1, y = high, lty = 2)
+```
+Predict the expected count, ± 95% confidence intervals, of levels "a" and "b", assuming x1 is fixed at
+it's mean.
+
+```{r}
+
+
+new<-data.frame(x1=rep(mean(data$x1), times = 100),
+                 x2= factor(x = data$x2))
+
+prd <- predict.glm(object = fit, newdata = new, type = 'link', se.fit = T)
+low <- exp(prd$fit - qnorm(0.975) * prd$se.fit)
+summary(low)
+high <- exp(prd$fit + qnorm(0.975) * prd$se.fit)
+summary(high)
+
+x2numeric<-as.data.frame(cbind(data$x2, ifelse(data$x2 == 'a', 0, 1)))
+x2numeric[1]<-NULL
+
+plot(y = exp(prd$fit), x = x2numeric$V2, xlab = 'x2',
+ylab = 'Expected count', cex.axis = 1.5, cex.lab = 1.5,
+ylim = c(min(low), max(high)), type = 'l')+
+lines(x = x2numeric$V2, y = low, lty = 2)+
+lines(x = x2numeric$V2, y = high, lty = 2)
+```
+
