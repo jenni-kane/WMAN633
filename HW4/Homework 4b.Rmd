@@ -79,7 +79,7 @@ x2_1
 log(exp(x2_1)/exp(x2_0)); x2
 ```
 
-Predict the expected count, ± 95% confidence intervals, over the observed range of values of x1, assuming
+Predict the expected count, Â± 95% confidence intervals, over the observed range of values of x1, assuming
 x2 is fixed at level "b".
 ```{r}
 new<- data.frame(
@@ -101,7 +101,7 @@ ylim = c(min(low), max(high)), type = 'l')+
 lines(x = new$x1, y = low, lty = 2)+
 lines(x = new$x1, y = high, lty = 2)
 ```
-Predict the expected count, ± 95% confidence intervals, of levels "a" and "b", assuming x1 is fixed at
+Predict the expected count, Â± 95% confidence intervals, of levels "a" and "b", assuming x1 is fixed at
 it's mean.
 
 ```{r}
