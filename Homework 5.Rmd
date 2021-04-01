@@ -1,0 +1,91 @@
+---
+title: "Homework 5"
+author: "Jenni Kane"
+date: "4/1/2021"
+output: html_document
+---
+
+```{r}
+data<-read.csv(file = "Bobcat.csv")
+site<-read.csv(file = "psi covariates.csv")
+detect<-read.csv(file = "p covariates.csv")
+data_mat<-as.matrix(data)
+
+```
+
+```{r}
+det_covs<-list(people = data.frame(detect[,]))
+```
+
+Questions 1 and 2
+```{r}
+library(unmarked)
+occu_data<-unmarkedFrameOccu(y = data_mat, 
+                             obsCovs = det_covs, 
+                             siteCovs = site)
+
+fit<-occu(formula = ~people ~Dist_5km, data = occu_data)
+
+```
+
+Call:
+occu(formula = ~people ~ Dist_5km, data = occu_data)
+
+Occupancy (logit-scale):
+            Estimate    SE      z  P(>|z|)
+(Intercept)    -1.05 0.101 -10.39 2.63e-25
+Dist_5km      -23.64 4.773  -4.95 7.28e-07
+
+Detection (logit-scale):
+            Estimate     SE       z P(>|z|)
+(Intercept)  -3.0133 0.0741 -40.646   0.000
+people       -0.0609 0.3779  -0.161   0.872
+
+
+
+Question 3
+```{r}
+plogis(-0.0609)
+```
+
+Probability of bobcat occurance when 10 people are photographed 
+```{r}
+p_10<- plogis(-3.0133+(-0.0609*10))
+p_10
+```
+
+Probability of bobcat occurance when 11 people are photographed 
+```{r}
+p_11<-plogis(-3.0133+(-0.0609*11))
+p_11
+```
+```{r}
+recreated_slope<-log((p_11/(1-p_11))/ (p_10/(1-p_10)))
+recreated_slope
+```
+```{r}
+plogis(recreated_slope)
+```
+
+Hence, the log odds ratio associated with a 1 unit change in the number of people photographed is 0.48.
+
+Question 4
+```{r}
+w<--23.64/4.773
+w
+```
+```{r}
+2*pnorm(-1*abs(w))
+```
+The null hypothesis was that there is no change in the probability of bobcat occupancy in response to land disturbance within 5km. Since our p value is so small, we can reliable reject this null hypothesis.
+
+Question 5
+```{r}
+new_psi <- data.frame(Dist_5km = seq(from = min(site$Dist_5km),
+            to = max(site$Dist_5km), length.out = 100))
+
+predict<-predict(object=fit, newdata = new_psi, type = 'state')
+
+plot(y=predict$Predicted, x=new_psi$Dist_5km, ylab = 'Probability of Bobcat Occurance', xlab='Proportion of area within 5km recently disturbed')
+```
+
