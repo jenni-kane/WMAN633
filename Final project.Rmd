@@ -1,0 +1,111 @@
+---
+title: Land disturbance history, not fertilizer addition, determines microbial carbon
+  use efficiency in a young *Miscanthus x giganteus* agroecosystem
+author: "Jenni Kane, Louis McDonald, Jeffrey Skousen, Zachary Freedman, Ember Morrissey"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+**Introduction**
+*Background, objective, and hypotheses*
+
+Soil bacteria and fungi form mutualistic relationships with plants whereby they mine soil for plant-essential nutrients and, in exchange, recieve carbon (C) rich sugars from plant photosynthesis. The either inocorporate this carbon into their biomass or use it as energy, resulting in respiration as carbon dioxide. Hence, soil microbes play an important role in mediating the flow of nutrients and carbon through ecosystems. The balance of C retention in biomass versus loss as carbon dioxide determines (hereafter, carbon use efficiency (CUE)) in part the storage of C in soil or release as a potent greenhouse gas. Recent evidence suggests that microbial CUE is determined in part by environmental conditions (Manzoni et al. 2012, Sinsabaugh et al. 2018, Kallenbach et al. 2019). However, soil physical disturbance, like that which occurs during surface mining, results in a multifaceted shift in environmental conditions (e.g., loss of soil structure, changes in soil hydrology). Hence, our objective was to parse the effect of land disturbance history and current management regime on microbial CUE. The main question that this study aimed to adress was: how does fertilization regime interact with land disturbance to shape microbial carbon use efficiency? We hypothesized that land disturbance and fertilization regime will both influence CUE depending on disturbance intensity and fertilization type. Lands that are most intensely disturbed will show the lowest microbial CUE due to the stressful conditions. Fertilization with inorganic nutrients will facilitate a high CUE due to the  increase in N, P, and K relative to C. Organic fertilization will result in an overall stimulation of growth, but no change in CUE due to the balanced input of C, N, P, and K. 
+
+**Methods**
+*Experimental Methods*
+In May of 2019, Miscanthus x giganteus plots were established on the West Virginia University Animal Science and Agronomy Farms. Within each farm, areas were selected according to their history of surface mining disturbance and soil quality as high and low disturbance. Within each farm-disturbance level pair, four blocks each containing four 5-square meter plots were assigned. The four plots within each block were randomly assigned one of four fertilization treatments: none, organic (300 kg/ha composted dairy manure), high inorganic (300 kg/ha 15-15-15 N-P-K), or low inorganic (100 kg/ha N-P-K). Within each plot, 25 Miscanthus x giganteus rhizomes were planted at 1 meter spacing to a depth of 4 cm. 
+In July of 2020, soil was collected to a depth of 4 cm from the rhizosphere of three randomly selected Miscanthus x giganteus plants within each plot. The soil from the three plants was composited and homogenized, resulting in one soil sample from each plot. Within 48 hours, laboratory stable isotope incubations were initiated whereby 13-C labeled glucose was added to 20 g soil (dry weight equivelent) in a 1-liter jar and moisture was standardized across all samples. Total and 13-C labeled carbon dioxide concentration of the jar headspace was measured at 24, 72, and 120 hour time points. Atthe 120 hour time point, soil was collected from the jars and total and 13-C labeled microbial biomass C was measured using chloroform fumigation (cite) and wet combustion (cite) techniques. Microbial carbom use efficency was calculated as 13-C biomass/(13-C biomass + 13-C respiration). 
+
+*Statistical Methods*
+We modeled our response variable, microbial carbon use efficiency (CUE), as a function of fertilization treatment, disturbance level, and block  using Analysis of Variance (ANOVA; citation) assuming a Gaussian distribution of residuals. To assess whether fertilization affected CUE within disturbance levels, an interaction term between fertilization treatment and disturbance level was included in the model. Statistical significance of the main effects was determined using the F-test, with the null hypothesis being that there is no difference in CUE between fertilization treatments, disturbance levels, or fertilization treatments within disturbance levels. The effect of predictor variables on CUE was considered significant at an alpha level of 0.05. 
+ 
+**Results**
+In all, our model included 64 experimental units (i.e., plots). Within this, there were two levels of disturbance and four levels of fertilization treatment, each containing 32 and 16 experimental units respectively. The effect of block was significant (F-value = 5.238, *p*=2.3e-05) signifying an effective use of blocks to reduce variation across the landscape within factor levels. Futher, the effect of disturbance level alone on CUE was statistically significant (F-value = 20.225, *p* = 6.3e-05; Figure 1), while the effect of treatment was not (F-value = 2.135, *p*=0.112). There was no significant interaction between disturbance and fertilization (F-value=0.436, *p*=0.728). These results indicate that disturbance history may be more influential in shaping microbial CUE than current land management practices (i.e., fertilization). The low disturbance level showed a significantly higher microbial CUE than the high disturbance level. High disturbance may function to decrease microbial CUE by creating stressful conditions that select for stress-tolerating life strategies. These strategies may include metabolic pathways that control initiation of dormancy and maintenance of cellular integrity under temperature and moisture extremes (Malik et al. 2020). It is plausible that the investment in such pathways is energetically (i.e., carbon) expensive, thus rendering the microbial community less carbon-efficient as more energy is spent in such ways to survive. 
+
+```{r}
+data<-read.csv("Data.csv")
+head(data)
+```
+
+```{r}
+fit<-lm(CUE~Treatment*Disturbance+Block, data=data)
+summary(fit)
+anova_fit<-aov(fit)
+summary(anova_fit)
+```
+
+
+
+```{r}
+library(doBy)
+library(ggplot2)
+library(ggpubr)
+library(tidyverse)
+library(rstatix)
+
+MeanData1<-summaryBy(CUE
+                  ~ Disturbance, data = data, 
+                  FUN = function(x) c(mean=mean(x, na.rm = TRUE), 
+                                      se=sd(x, na.rm = TRUE)/sqrt(length(x))))
+
+data$CUE<-factor(data$CUE)
+data %>% sample_n_by(Location, size = 2)
+pvals<-tibble::tribble(
+  ~group1, ~group2, ~p.adjust, ~p.adjust.sig, 
+  "Low", "High", "6.34e-05", "p = 6.34e-05"
+)
+pvals
+
+fig1<-ggplot(MeanData1, aes(x=Disturbance, y=CUE.mean, color = Disturbance))+
+  geom_errorbar(aes(ymin=(CUE.mean-CUE.se), 
+                    ymax=(CUE.mean+CUE.se)),
+                width=0.1,  position = "dodge")+ 
+  geom_point(shape = 18, size = 5, position = position_dodge(width = 0.4)) + 
+  stat_pvalue_manual(pvals, y.position = 0.53, step.increase = 0.1, label = "p.adjust.sig")+
+    scale_color_manual(values = c("darkolivegreen4", "darkmagenta", "thistle4", "lightpink3"))+
+  labs(x="Disturbance Level", y="Microbial Carbon Use Efficiency")+
+  theme(plottitle = element_text(hjust = 05),
+        stripbackground = element_blank(),
+        striptext = element_text(size = 16),
+        axistextx = element_text(size = 11, angle = 45, hjust = 1),
+        axistexty = element_text(size = 11),
+        axistitle = element_text(size = 16))+theme_classic()
+fig1
+
+```
+
+
+
+
+
+```{r}
+library(grid)
+MeanData2<-summaryBy(CUE
+                  ~ Treatment, data = data, 
+                  FUN = function(x) c(mean=mean(x, na.rm = TRUE), 
+                                      se=sd(x, na.rm = TRUE)/sqrt(length(x))))
+
+fig2<-ggplot(MeanData2, aes(x=Treatment, y=CUE.mean, color = Treatment))+
+  geom_errorbar(aes(ymin=(CUE.mean-CUE.se), 
+                    ymax=(CUE.mean+CUE.se)),
+                width=0.1,  position = "dodge")+ 
+  geom_point(shape = 18, size = 5, position = position_dodge(width = 0.4)) + 
+    scale_color_manual(values = c("darkolivegreen4", "darkmagenta", "thistle4", "lightpink3"))+
+  labs(x="Disturbance Level", y="Microbial Carbon Use Efficiency")+
+  theme(plottitle = element_text(hjust = 05),
+        stripbackground = element_blank(),
+        striptext = element_text(size = 16),
+        axistextx = element_text(size = 11, angle = 45, hjust = 1),
+        axistexty = element_text(size = 11),
+        axistitle = element_text(size = 16))+theme_classic()
+
+
+pval<-grobTree(textGrob("Overall p-value: 0.112", x = 0.5, y = 0.9, hjust = 0, gp = gpar(col = "black", fontsize=13)))
+fig2<-fig2+annotation_custom(pval)
+fig2
+```
+
+
+
