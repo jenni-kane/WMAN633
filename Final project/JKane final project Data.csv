@@ -1,0 +1,65 @@
+SampleID,Location,Disturbance,Block,Treatment ,CUE 
+1,Animal Science,Low,A,Low N-P-K,0.514232132
+2,Animal Science,Low,A,None,0.558771763
+3,Animal Science,Low,A,Organic,0.524529331
+4,Animal Science,Low,A,High N-P-K,0.519227153
+5,Animal Science,Low,B,Low N-P-K,0.536268067
+6,Animal Science,Low,B,High N-P-K,0.497378561
+7,Animal Science,Low,B,None,0.555221779
+8,Animal Science,Low,B,Organic,0.547171737
+9,Animal Science,Low,C,None,0.541179203
+10,Animal Science,Low,C,High N-P-K,0.622838592
+11,Animal Science,Low,C,Organic,0.425383512
+12,Animal Science,Low,C,Low N-P-K,0.486472469
+13,Animal Science,Low,D,High N-P-K,0.475698854
+14,Animal Science,Low,D,Organic,0.443402638
+15,Animal Science,Low,D,None,0.437123191
+16,Animal Science,Low,D,Low N-P-K,0.411895743
+17,Animal Science,High,E,Organic,0.50446477
+18,Animal Science,High,E,Low N-P-K,0.427439663
+19,Animal Science,High,E,None,0.491601297
+20,Animal Science,High,E,High N-P-K,0.511416732
+21,Animal Science,High,F,Organic,0.447282547
+22,Animal Science,High,F,High N-P-K,0.443844703
+23,Animal Science,High,F,Low N-P-K,
+24,Animal Science,High,F,None,0.457107925
+25,Animal Science,High,G,High N-P-K,0.481101937
+26,Animal Science,High,G,Low N-P-K,0.468153825
+27,Animal Science,High,G,None,0.366611281
+28,Animal Science,High,G,Organic,0.496407734
+29,Animal Science,High,H,High N-P-K,0.504454913
+30,Animal Science,High,H,None,0.436804748
+31,Animal Science,High,H,Organic,0.439310064
+32,Animal Science,High,H,Low N-P-K,0.44169084
+33,Agronomy,Low,I,None,0.513787734
+34,Agronomy,Low,I,Organic,0.45554207
+35,Agronomy,Low,I,High N-P-K,0.492472555
+36,Agronomy,Low,I,Low N-P-K,0.475022153
+37,Agronomy,Low,J,Low N-P-K,0.471540314
+38,Agronomy,Low,J,None,0.435293809
+39,Agronomy,Low,J,Organic,0.483616898
+40,Agronomy,Low,J,High N-P-K,0.48621871
+41,Agronomy,Low,K,Organic,0.540962437
+42,Agronomy,Low,K,Low N-P-K,0.539489876
+43,Agronomy,Low,K,None,0.587131454
+44,Agronomy,Low,K,High N-P-K,0.587828277
+45,Agronomy,Low,L,Low N-P-K,
+46,Agronomy,Low,L,High N-P-K,0.55168205
+47,Agronomy,Low,L,Organic,0.625344294
+48,Agronomy,Low,L,None,0.576037268
+49,Agronomy,High,M,Low N-P-K,0.496853297
+50,Agronomy,High,M,Organic,0.581754617
+51,Agronomy,High,M,High N-P-K,0.58950211
+52,Agronomy,High,M,None,0.58353118
+53,Agronomy,High,N,High N-P-K,0.441528812
+54,Agronomy,High,N,Organic,0.517827258
+55,Agronomy,High,N,None,0.470220301
+56,Agronomy,High,N,Low N-P-K,0.471657054
+57,Agronomy,High,O,High N-P-K,0.417112412
+58,Agronomy,High,O,Low N-P-K,0.43086175
+59,Agronomy,High,O,None,0.430720149
+60,Agronomy,High,O,Organic,0.400509712
+61,Agronomy,High,P,Organic,0.317035671
+62,Agronomy,High,P,Low N-P-K,0.435903899
+63,Agronomy,High,P,High N-P-K,
+64,Agronomy,High,P,None,
