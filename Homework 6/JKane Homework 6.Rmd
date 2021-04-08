@@ -1,0 +1,100 @@
+---
+title: "Homework 6"
+author: "Jenni Kane"
+date: "April 8, 2021"
+output: html_document
+---
+```{r}
+count<-read.csv("count.csv")
+countmat<-as.matrix(count)
+site_covs<-read.csv("site_covs.csv")
+obs_covs<-read.csv("obs_covs.csv")
+```
+
+```{r}
+library(unmarked)
+```
+```{r}
+observe<-list(
+  j = data.frame(obs_covs[, c('j1', 'j2', 'j3')])
+)
+```
+
+```{r}
+nmix.model<-unmarkedFramePCount(y=countmat, 
+                                siteCovs = site_covs,
+                                obsCovs = observe)
+```
+
+```{r}
+fit<-pcount(formula=~j~x1+x2, data = nmix.model, K=100)
+summary(fit)
+betas<-coef(fit)
+betas
+```
+
+Interpretation:
+```{r}
+exp(betas[2])
+```
+The proportional change in expected count associated with a 1-unit change in x1 is 1.447.
+
+Verification:
+```{r}
+#evaluate when x1=1
+c_1<-betas[1]+betas[2]*1
+
+#evaluate when x2=2
+c_2<-betas[1]+betas[2]*2
+```
+
+```{r}
+#recreate ratio of expected counts, which should match the slope coefficient for x1 from the model 
+verifyx1<-log(exp(c_2)/exp(c_1))
+verifyx1
+```
+
+```{r}
+verifyx1;betas[2]
+```
+
+```{r}
+newdat<-data.frame(j = seq(from = min(observe$j),
+                              to = max(observe$j), length.out = 100),
+                   x1 = rep(mean(site_covs$x1), times = 100),
+                   x2 = factor(c('a', 'b', 'c', 'd'), levels = c('a', 'b', 'c', 'd')))
+
+predict<-predict(object = fit, newdata=newdat, type = 'det')
+
+
+plot(y=predict$Predicted, x=newdat$j, type = 'l')+
+  lines(x=newdat$j, y=predict$lower, lty = 2)+
+  lines(x=newdat$j, y=predict$upper, lty = 2)
+```
+```{r}
+conmat<-matrix(
+  c(0,0,-1,0,0,
+    0,0,0,-1,0,
+    0,0,0,0,-1,
+    0,0,1,-1,0,
+    0,0,0,1,-1,
+    0,0,1,0,-1),
+  nrow=6, byrow = T
+)
+conmat
+```
+
+```{r}
+contrasts<-linearComb(obj=fit, coefficients = conmat, type = 'state')
+contrasts
+```
+
+```{r}
+wald.ts<-coef(contrasts)/SE(contrasts)
+wald.ts
+```
+```{r}
+wald.pvals<-2*pnorm(-1*abs(wald.ts))
+wald.pvals
+```
+All of our p values are very small. Therefore, we can reject the null hypotheses that there is no difference between all possible pairwise combinations of variable x2. We accept the alternative hypothesis, that all pairwise combinations of x2 are significantly different than one another. 
