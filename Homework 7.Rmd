@@ -1,0 +1,88 @@
+---
+title: "Homework 7"
+author: "Jenni Kane"
+date: "4/18/2021"
+output: html_document
+---
+Question #1
+```{r}
+data<-read.csv(file = "Bobcat.csv")
+site<-read.csv(file = "psi covariates.csv")
+detect<-read.csv(file = "p covariates.csv")
+data_mat<-as.matrix(data)
+det_covs<-list(people = data.frame(detect[,]))
+library(unmarked)
+occu_data<-unmarkedFrameOccu(y = data_mat, 
+                             obsCovs = det_covs, 
+                             siteCovs = site)
+```
+
+Question #2
+```{r}
+fit_1<-occu(~ 1 ~ 1, occu_data)
+fit_2<-occu(~ people ~ 1, occu_data)
+fit_3<-occu(~ 1 ~ Dist_5km, occu_data)
+fit_4<-occu(~ people ~ Dist_5km, occu_data)
+```
+
+Question #3
+```{r}
+library(AICcmodavg)
+cand_mods<-list(
+  M1 = fit_1, M2 = fit_2, M3 = fit_3, M4 = fit_4
+)
+```
+
+
+```{r}
+models<-aictab(cand.set = cand_mods, second.ord = F)
+models
+```
+Our top model is model 3, wherein detection = intercept only and occupancy = disturbance. This is because it has the lowest AIC of the candidate models. However model 4 is a fairly close second, which we can see because delta AIC is only 1.97 between our top two models, M3 and M4. This would lead to some uncertainty in model selection since delta AIC is less than 2. In other words, some folks may consider models 3 and 4 equally good choices leaving us without a clear "winner". Hence the need for model averaging. 
+
+Question #4
+```{r}
+average_people<-modavgShrink(cand.set = cand_mods, parm = "people", second.ord = F, parm.type='detect')
+
+average_people$Mod.avg.beta; average_people$Uncond.SE; average_people$Lower.CL; average_people$Upper.CL
+```
+```{r}
+average_disturbance<-modavgShrink(cand.set = cand_mods, parm = "Dist_5km", second.ord = F, parm.type='psi')
+
+average_disturbance$Mod.avg.beta; average_disturbance$Uncond.SE; average_disturbance$Lower.CL; average_disturbance$Upper.CL
+```
+
+Question #5
+```{r}
+new_data<-data.frame(
+  people = seq(from = min(detect, na.rm = TRUE), to = max(detect, na.rm = TRUE), length.out = 100), 
+  Dist_5km = seq(from= min(site$Dist_5km), to = max(site$Dist_5km), length.out = 100)
+)
+
+predict<-modavgPred(cand.set = cand_mods, 
+                    newdata = new_data, 
+                    second.ord = F, 
+                    parm.type = 'psi')
+Predict_occupancy<-predict
+
+Predict_detection<-modavgPred(cand.set = cand_mods, 
+                    newdata = new_data, 
+                    second.ord = F, 
+                    parm.type = 'detect')
+Predict_detection
+```
+
+Plot model averaged prediction of occupancy
+```{r}
+plot(y=Predict_occupancy$mod.avg.pred, x=new_data$Dist_5km, type = 'l', ylab = 'Model averaged predict. of Bobcat occupancy prob.', xlab='Proportion of area within 5km recently disturbed')+
+lines(x=new_data$Dist_5km, y=Predict_occupancy$lower.CL, lty = 2)+
+  lines(x=new_data$Dist_5km, y=Predict_occupancy$upper.CL, lty = 2)
+```
+```{r}
+plot(y=Predict_detection$mod.avg.pred, x=new_data$people, type = 'l',  ylab = 'Model averaged predict. of Bobcat detection prob.', xlab='Number of People Photographed/100')+
+lines(x=new_data$people, y=Predict_detection$lower.CL, lty = 2)+
+  lines(x=new_data$people, y=Predict_detection$upper.CL, lty = 2)
+
+```
+It seems like the confidence intervals are really small here so they don't show up. 
+
