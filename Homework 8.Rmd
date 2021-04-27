@@ -1,0 +1,75 @@
+---
+title: "Homework 8"
+author: "Jenni Kane"
+date: "April 27, 2021"
+output: html_document
+---
+
+```{r}
+library(unmarked)
+```
+
+```{r}
+#detection data
+y<-read.csv('sosp_nmix.csv')
+y_mat<-as.matrix(y)
+
+#site covariates 
+site_covs<-read.csv('n_covs_nmix.csv')
+
+#detection covariates
+det_covs<-read.csv('p_covs_nmix.csv')
+
+det_covs_list<-list(time = data.frame(det_covs[, c('time.1', 'time.2')]),
+                    sky = data.frame(sky.1 = factor(det_covs$sky.1), 
+                                     sky.2 = factor(det_covs$sky.2))
+  )
+
+occu_data<-unmarkedFramePCount(
+  y = y_mat,
+  siteCovs = site_covs, 
+  obsCovs = det_covs_list
+)
+
+fit<-pcount(formula = ~time + sky ~ size + type, data = occu_data)
+```
+```{r}
+lambda_i<-predict(fit, type = 'state')
+
+p_ij<-predict(fit, type = 'det')
+
+lambda_i$Predicted[1]; p_ij$Predicted[1]
+
+```
+```{r}
+lambda_i$Predicted[1] * p_ij$Predicted[1]; fitted(fit)[1]
+```
+
+```{r}
+chi<-function(fit){
+  obs<-getY(fit@data)
+  exp<-fitted(fit)
+  p_ij<-predict(fit, type = 'det')
+  ts<-(obs-exp)^2/(exp*(1-p_ij$Predicted))
+  return(sum(ts))
+}
+
+
+chi(fit)
+```
+
+```{r}
+sims<-parboot(object = fit, statistic = chi, nsim = 1000)
+sims
+```
+
+
+```{r}
+hist(sims@t.star[,1], xlab = 'value', main = 'test statistic distribution', xlim = c(0, 1500))
+lines(x = rep(chi(fit), 2),
+y = c(0, 1000),
+col = 'red', lwd = 3)
+
+```
+
+The null hypothesis is that the fitted model is the data generating model. From the graph above it looks like we need to reject this since the test statistic of the data (red line) is so far off from the simulated data distribution. Hence we may need to run a different model, try different covariates, or accept that we don't have a good way of approximating the process. 
