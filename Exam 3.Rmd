@@ -1,0 +1,96 @@
+---
+title: "Exam 3"
+author: "Jenni Kane"
+date: "May 5, 2021"
+output: html_document
+---
+
+
+Question 1: This data could have been collected by 3 replicate surveys at 100 sites (rows are sites). During each of these replicate surveys, detection/non detection data is recorded and observation covariates are also recorded. For each site, site covariates are recorded (i.e., once per site). 
+
+```{r}
+obscovs1<-read.csv("obscovs1.csv")
+obscovs2<-read.csv("obscovs2.csv")
+sitecovs<-read.csv("sitecovs.csv")
+detect<-read.csv("detect.csv")
+
+library(unmarked)
+```
+
+
+```{r}
+obscovs<-list(obscovs1 = obscovs1, obscovs2 = obscovs2)
+
+occu_data<-unmarkedFrameOccu(y = as.matrix(detect), siteCovs = sitecovs, obsCovs = obscovs)
+
+fit<-occu(~obscovs1+obscovs2 ~x1+x2, occu_data)
+summary(fit)
+```
+```{r}
+matrix<-matrix(c(0,0,-4), nrow = 1)
+contrast<-linearComb(obj = fit, coefficients = matrix, type = 'state')
+pnorm(-1 * abs(coef(contrast)/SE(contrast)))*2
+```
+P-value is less than 0.05, so we reject the null hypothesis. 
+```{r}
+library(AICcmodavg)
+fit.a<-occu(~obscovs1+obscovs2 ~x1+x2, occu_data)
+fit.b<-occu(~obscovs1+obscovs2 ~x1, occu_data)
+fit.c<-occu(~obscovs1+obscovs2 ~x2, occu_data)
+fit.d<-occu(~obscovs1+obscovs2 ~1, occu_data)
+
+model.list<-list(mod.a = fit.a, mod.b = fit.b, mod.c = fit.c, mod.d = fit.d)
+aictab(model.list, second.ord = F)
+```
+Model C is best since it has the lowest AIC at 0, but model A is a close second since it's AIC is still below 2. 
+
+```{r}
+avg.x1<-modavgShrink(cand.set = model.list, parm = "x1", second.ord = F, parm.type = 'psi')
+avg.x1
+```
+Our confidence interval crosses zero, (-0.35 to 0.69), this implies that this coefficient is not very influential on detection probability. 
+
+```{r}
+new_data<-data.frame(obscovs1 = rep(0,100),
+                     obscovs2 = seq(min(obscovs$obscovs2), max(obscovs$obscovs2), length.out = 100))
+
+obscovs2.prd<-modavgPred(model.list, newdata = new_data, second.ord = F, parm.type = 'detect')
+
+plot(x = new_data$obscovs2, y = obscovs2.prd$mod.avg.pred, type = 'l', ylim = c(0,1), ylab = "Model Averaged Prediction", xlab = "Observation Covariate 2")+
+lines(x = new_data$obscovs2, y = obscovs2.prd$lower.CL, lty = 2)+
+  lines(x = new_data$obscovs2, y = obscovs2.prd$upper.CL, lty = 2)
+```
+```{r}
+chisq <- function(fit.c){ # mod is fitted model
+obs <- getY(fit.c@data) # observed
+ex <- fitted(fit.c) # expected
+ts <- (ex - obs) ^ 2 / # chi-square statistic
+(ex * (1 - ex))
+return(sum(ts))
+}
+
+
+chisq(fit.c)
+```
+```{r}
+sims<-parboot(object = fit.c, statistic = chisq, nsim = 100)
+sims
+```
+
+We fail to reject our null hypothesis (which is that the fitted model is the data generating model), with a p value of 0.22. Hence we have evidence that our model pretty well predicts the biological process. 
+
+Question 8: The closure assumptionis that a species is either present or absent across all replicate surveys regardless of whether they are detected/not detected during said survey. So if you detect a species in one survey, you assume it is there across all surveys even if you never see it. This is one reason so many replicates are necessary. If you violate closure, you will underestimate the true detection probability and overestimate occupancy probability. This is because you may collect a data point of non detection when a species is truly absent, but closure assumptions tell us that it is actually there, we just didn't see it.
+
+Question 9: to transform p, a bounded value, to the real number line, you could use the inverse logit link. 
+```{r}
+log(0.25/(1-0.25))
+```
+Question 10: Poisson distribution, where the parameter is the rate or intensity of an event that is greater than zero. To model this as a linear function of variables, we would use the inverse log link. 
+
+Question 11: In the context of model checking, our null hypothesis is that the fitted model is the data generating model. Our test statistic, in the example above, sum of squared Pearson's residuals, gives us an idea of how well our observed Y values correspond to the expected values of Y. Functions like parboot generate a distribution of test statistics and compares that to the calculated test statistic. Then our p value tells us the probability of observing a more extreme value than the test statistic if the null hypothesis is true. Hence, when we fail to reject our null hypothesis, we are affirming that our model pretty well predicts the data generating process. 
+
+Question 12: Beta 1 is the difference between levels b and a.
+
+Question 13: The response variable changes:
+$$\beta_{2}+\beta_{4}x{3}$$
+units for every one unit change in x2
